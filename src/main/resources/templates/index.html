@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Hello Overrides!</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.6/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.6/css/bootstrap.min.css}"
+          rel="stylesheet" media="screen" />
+    <link href="../static/css/core.css"
+          th:href="@{/css/core.css}"
+          rel="stylesheet" media="screen" />
+    <script src="http://cdn.jsdelivr.net/webjars/jquery/2.2.1/jquery.min.js"
+            th:src="@{/webjars/jquery/2.2.1/jquery.min.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.6/js/bootstrap.min.js"
+            th:src="@{/webjars/bootstrap/3.3.6/js/bootstrap.min.js}"></script>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="fragments/header :: header">
+    <!-- ============================================================================ -->
+    <!-- This content is only used for static prototyping purposes (natural templates)-->
+    <!-- and is therefore entirely optional, as this markup fragment will be included -->
+    <!-- from "fragments/header.html" at runtime.                                     -->
+    <!-- ============================================================================ -->
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Static header</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="#" th:href="@{system}">Actuator</a></li>
+            </ul>
+        </div>
+    </div>
+    </div>
+</div>
+<div class="container">
+    <div>
+        <h1>Overrides</h1>
+        <p>
+            Actuator endpoints allow you to monitor and interact with your application.
+            Spring Boot includes a number of built-in endpoints and you can also add your own.
+        </p>
+        <form role="form" id="formfield" th:action="@{/}" th:object="${account}" method="post">
+            <input type="hidden" name="accountId" th:field="*{accountId}"/>
+            <input type="hidden" name="username" id="username" value=""/>
+            <input type="hidden" name="token" id="token" value=""/>
+
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" class="form-control" placeholder="Enter Name" name="name" id="name" th:field="*{name}"/>
+            </div>
+
+            <div class="form-group">
+                <label>Balance</label>
+                <input type="text" class="form-control" placeholder="Enter Balance" name="balance" id="balance" th:field="*{balance}"/>
+            </div>
+
+            <div class="form-group">
+                <label>Payment&nbsp;&nbsp;</label><span class="label label-danger">*required</span>
+                <input type="text" class="form-control" placeholder="Enter Payment" name="payment" id="payment" th:value="*{payment}"/>
+            </div>
+
+            <div th:if="*{rulesTriggered}">Rule triggered:<div class="bg-success" th:text="*{rulesTriggered}"></div><br/></div>
+            <div th:if="${success}"><b><div class="bg-info" th:text="${success}"></div></b><br/><br/></div>
+            <div th:if="${error}"><b><div class="bg-danger" th:text="${'ERROR: ' + error}"></div></b><br/><br/></div>
+
+            <input type="reset" class="btn btn-danger" value="Reset"/>
+            <input type="button" name="btn" value="Submit" id="submitBtn" data-target="#confirm-submit" class="btn btn-primary" />
+        </form>
+
+        <div class="modal fade" id="confirm-submit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Override Validation
+                    </div>
+                    <div class="modal-body">
+                        Payment is greater than the balance.  Are you sure you want to override?
+                        <table class="table table-condensed table-hover">
+                            <tr>
+                                <th>Name</th>
+                                <td id="mName"></td>
+                            </tr>
+                            <tr>
+                                <th>Balance</th>
+                                <td id="mBalance"></td>
+                            </tr>
+                            <tr>
+                                <th>Payment</th>
+                                <td id="mPayment"></td>
+                            </tr>
+                            <tr>
+                                <th>Override</th>
+                                <td id="mOverride"></td>
+                            </tr>
+                            <tr>
+                                <th>Username&nbsp;&nbsp;<span class="label label-danger">*required</span></th>
+                                <td><input type="text" class="form-control" placeholder="Enter Username" name="mUsername" id="mUsername"/></td>
+                            </tr>
+                            <tr>
+                                <th>Token&nbsp;&nbsp;<span class="label label-danger">*required</span></th>
+                                <td><input type="text" class="form-control" placeholder="Enter Token" name="mToken" id="mToken"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a href="#" id="submit" class="btn btn-primary success">Submit</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $('#submitBtn').click(function() {
+            $.ajax({
+                url: '/override',
+                method: 'GET',
+                data: {name:$('#name').val(), balance:$('#balance').val(), payment:$('#payment').val()}
+            }).success(function(response) {
+                $('#mName').text(response.name);
+                $('#mBalance').text(response.balance);
+                $('#mPayment').text(response.payment);
+                $('#mOverride').text(response.override);
+
+                if (response.override) {
+                    $('#confirm-submit').modal('toggle');
+                } else {
+                    $('#formfield').submit();
+                }
+            });
+        });
+
+        $('#submit').click(function(){
+            $('#username').val($('#mUsername').val());
+            $('#token').val($('#mToken').val());
+            $('#formfield').submit();
+        });
+    </script>
+    <footer>
+        <div th:replace="fragments/footer :: footer">&copy; 2017 Patrick Carretas</div>
+    </footer>
+</div>
+</body>
+</html>

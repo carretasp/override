@@ -1,0 +1,16 @@
+package rules
+import override.*;
+
+rule IsNonOverridePolicy when
+    p : Account( payment < balance )
+then
+    p.setOverride(false);
+    p.setRulesTriggered("Payment is less than Balance");
+end
+
+rule IsOverridePolicy when
+    p : Account( payment >= balance )
+then
+    p.setOverride(true);
+    p.setRulesTriggered("Payment is greater than Balance");
+end
